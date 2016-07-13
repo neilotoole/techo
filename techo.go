@@ -1,7 +1,7 @@
 /*
-Package techo is for transparently "mocking" HTTP services in your
-test code, by starting a real (Echo) server in its own goroutine, than can
-be stopped easily.
+Package techo is for running "real mocked" HTTP services in your test code, by
+starting a stoppable HTTP (Echo) server in its own goroutine on a random port.
+This is especially helpful with testing of REST clients.
 
 Example:
 
@@ -31,39 +31,47 @@ import (
 	"log"
 	"net"
 
+	"time"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/tylerb/graceful"
 )
 
 type Techo struct {
+	// Port is the port number the server is listening at.
 	Port int
 	// Base is the base URL (scheme + host + port), e.g. http://127.0.0.1:61241
 	Base string
+	// Addr provides access to the underlying TCP address object.
 	Addr *net.TCPAddr
 	*echo.Echo
 	srv *graceful.Server
 }
 
 // New starts a server at any available port. This value is available in the Port field.
+// In the unlikely event of an error, it is logged, and nil is returned.
 func New() *Techo {
-	return listenAndStart("localhost:")
+	te, err := listenAndStart("localhost:")
+	if err != nil {
+		log.Println(err)
+	}
+	return te
 }
 
 // NewAt starts a server at addr (e.g. "127.0.0.1:8080").
-func NewAt(addr string) *Techo {
+func NewAt(addr string) (*Techo, error) {
 	return listenAndStart(addr)
 }
 
-func listenAndStart(addr string) *Techo {
+func listenAndStart(addr string) (*Techo, error) {
 
 	t := new(Techo)
 	t.Echo = echo.New()
 
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
-		t.Logger().Error(err)
-		return nil
+		return nil, err
 	}
 
 	t.Addr = l.Addr().(*net.TCPAddr)
@@ -72,7 +80,8 @@ func listenAndStart(addr string) *Techo {
 	std := standard.New(fmt.Sprintf(":%v", t.Addr.Port))
 	std.SetHandler(t.Echo)
 	t.srv = &graceful.Server{
-		Server: std.Server,
+		Timeout: time.Millisecond * 1,
+		Server:  std.Server,
 	}
 
 	go func() {
@@ -80,26 +89,22 @@ func listenAndStart(addr string) *Techo {
 		if err != nil {
 			log.Printf("techo error: %v\n", err)
 		}
-		log.Printf("techo exiting [%v]\n", t)
 	}()
 
-	//log.Printf("techo listening at %v", t.URL)
-	return t
+	return t, nil
 }
 
-// Stop instructs the server to shutdown.
+// Stop instructs the server to shut down.
 func (t *Techo) Stop() {
-
-	//log.Printf("t.Stop(%v)\n", t)
-	t.srv.Stop(0)
-
+	t.srv.Stop(time.Millisecond * 1)
 }
 
 func (t *Techo) String() string {
 	return t.Base
 }
 
-// URL constructs an absolute URL from the supplied (relative) path.
+// URL constructs an absolute URL from the supplied (relative) path. For example,
+// calling te.URL("/my/path") could return "http://127.0.0.1:53262/my/path".
 func (t *Techo) URL(path string) string {
 
 	if len(path) == 0 {
