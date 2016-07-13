@@ -1,6 +1,6 @@
 # techo
 
-###*Real Mocking*™ for HTTP/REST services.
+###Why *Fake Mock* when you can *Real Mock™*?
 
 `techo` is a package for transparently mocking HTTP/REST servers, inline in your
 test code. As far as the code under test is concerned, the mocked server is
