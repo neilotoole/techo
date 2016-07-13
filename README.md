@@ -1,10 +1,11 @@
 # techo
 
-###Why Fake Mock when you can *Real Mock™*?
+###Why *Fake Mock* when you can *Real Mock™*?
 
 `techo` is a package for transparently mocking HTTP/REST servers, inline in your
 test code. As far as the code under test is concerned, the mocked server is
-a "real" server because... well, it is a real server. An [Echo](https://github.com/labstack/echo) server to be precise, running on a separate goroutine on any available port.
+a "real" server because... well, it is a real server. An [Echo](https://github.com/labstack/echo)
+server to be precise,running on a separate goroutine on any available port.
 
 Here's how you might use the thing:
 
