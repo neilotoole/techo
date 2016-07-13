@@ -4,7 +4,7 @@
 
 `techo` is a package for transparently mocking HTTP/REST servers, inline in your
 test code. As far as the code under test is concerned, the mocked server is
-a "real" server because... well, it is a real server. An [Echo](https://github.com/labstack/echo) server to be running on a separate goroutine on any available port.
+a "real" server because... well, it is a real server. An [Echo](https://github.com/labstack/echo) server to be precise, running on a separate goroutine on any available port.
 
 Here's how you might use the thing:
 
@@ -26,7 +26,7 @@ func TestHello(t *testing.T) {
 
     // Let's call the web server!
 	resp, _ := http.Get(te.URL("/hello?name=World"))
-	// Note that te.URL() turns '/hello' into http://127.0.0.1:[PORT]/hello
+	// Note that te.URL() turns "/hello" into "http://127.0.0.1:[PORT]/hello"
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -34,7 +34,7 @@ func TestHello(t *testing.T) {
 }
 ```
 
-Reference the example above, here's a few things that are going on:
+Referencing the example above, here's a few things that are going on:
 
 - The `te` object (of type `techo.Techo`) returned by`techo.New()` has an embedded `Echo` server.
     - So you can treat `techo.Techo` just like `echo.Echo`, and do things like `te.POST( ...)` etc.
