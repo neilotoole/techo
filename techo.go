@@ -230,7 +230,7 @@ func (t *Techo) String() string {
 }
 
 // AbsURL constructs an absolute URL from the supplied (relative) path. For example,
-// calling te.URL("/my/path") could return "http://127.0.0.1:53262/my/path".
+// calling te.AbsURL("/my/path") could return "http://127.0.0.1:53262/my/path".
 func (t *Techo) AbsURL(path string) string {
 
 	if len(path) == 0 {
