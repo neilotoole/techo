@@ -31,7 +31,7 @@ func TestHello(t *testing.T) {
 
     // Let's call the web server!
 	resp, _ := http.Get(te.AbsURL("/hello?name=World"))
-	// Note that te.URL() turns "/hello" into "http://127.0.0.1:[PORT]/hello"
+	// Note that te.AbsURL() turns "/hello" into "http://127.0.0.1:[PORT]/hello"
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
