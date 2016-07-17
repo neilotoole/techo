@@ -1,11 +1,15 @@
 # techo
 
-###Why *Fake Mock* when you can *Real Mock™*?
+### Echo-based alternative to `http.httptest`
 
 `techo` is a package for transparently mocking HTTP/REST servers, inline in your
-test code. As far as the code under test is concerned, the mocked server is
-a "real" server because... well, it is a real server. An [Echo](https://github.com/labstack/echo)
-server to be precise,running on a separate goroutine on any available port.
+test code, just like `http.httptest`. The key difference is that `techo` is based
+on [Echo](https://github.com/labstack/echo), which provides an easier interface.
+
+Also:
+- test multiple endpoints using the same `techo` instance
+- specify a particular interface/port
+- provide your own TLS certs
 
 Here's how you might use the thing:
 
@@ -26,7 +30,7 @@ func TestHello(t *testing.T) {
 	})
 
     // Let's call the web server!
-	resp, _ := http.Get(te.URL("/hello?name=World"))
+	resp, _ := http.Get(te.AbsURL("/hello?name=World"))
 	// Note that te.URL() turns "/hello" into "http://127.0.0.1:[PORT]/hello"
 	defer resp.Body.Close()
 
@@ -34,6 +38,7 @@ func TestHello(t *testing.T) {
 	assert.Equal(t, "Hello World", string(body))
 }
 ```
+
 
 Referencing the example above, here's a few things that are going on:
 
@@ -44,13 +49,70 @@ Referencing the example above, here's a few things that are going on:
     - on a random available port
 - The port number is here: `te.Port`.
 - The base URL of the server (e.g. `http://127.0.0.1:53012`) is here: `te.Base`
-- There's a handy function for getting the URL of a path on the techo server. Just do `te.URL("/my/path")`, and you'll get back something like `http://127.0.0.1:52713/my/path`.
+- There's a handy function for getting the URL of a path on the techo server. Just do `te.AbsURL("/my/path")`, and you'll get back something like `http://127.0.0.1:52713/my/path`.
 - Stop the server using `te.Stop()`. A common idiom is `defer te.Stop()` immediately after the call to `techo.New()`. FYI, the stoppability is due a (hidden) [Graceful](https://github.com/tylerb/graceful) server.
+
+
+## Examples
+
+Start a server at a specific address:
+
+```
+	te, err := techo.NewAt(fmt.Sprintf("localhost:%v", port))
+	if err != nil {
+		return fmt.Errorf("Probably that port is in use: %v", err)
+	}
+	te.GET("/hello", func(c echo.Context) error {
+		return c.String(http.StatusOK, "hello world")
+	})
+```
+
+To add multiple endpoints:
+
+```
+	te.GET("/callme", func(c echo.Context) error {
+		return c.String(http.StatusOK, "maybe")
+	})
+
+	te.GET("/goodbye", func(c echo.Context) error {
+		return c.String(http.StatusOK, "goodbye cruel world")
+	})
+	
+```
+
+Start a TLS (HTTPS) server:
+
+```
+	te := techo.NewTLS()
+	defer te.Stop()
+	te.GET("/hello", func(c echo.Context) error {
+		return c.String(http.StatusOK, "hello world")
+	})
+```
+
+If your client uses  `http.DefaultClient` as its underlying client, and you are
+using TLS, you will likely want to skip verification of the cert before any
+requests to the `techo` endpoint, like so:
+
+```
+	techo.SkipDefaultClientInsecureTLSVerify()
+	resp, err = http.Get(te.AbsURL("/hello"))
+```
+
+To use your own cert:
+```
+	cert, _ := ioutil.ReadFile("path/to/server.crt")
+	key, _ := ioutil.ReadFile("path/to/server.key")
+	techo.SetDefaultTLSCert(cert, key)
+	te := techo.NewTLS()
+```
+
+
 
 
 ### Acknowledgements
 
-These guys do all the magic:
+These guys do all the magic behind the scenes.
 
 * [Echo](https://github.com/labstack/echo)
 * [Graceful](https://github.com/tylerb/graceful)
