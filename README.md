@@ -47,8 +47,7 @@ Referencing the example above, here's a few things that are going on.
 - When `techo.New()` is called, the server is started automatically...
     - on its own goroutine (transparently to the caller)
     - on a random available port
-- The port number is here: `te.Port`.
-- The base URL of the server (e.g. `http://127.0.0.1:53012`) is here: `te.URL`
+- The base URL of the server (e.g. `http://127.0.0.1:53012`) is accessible via `te.URL`, and the port at `te.Port`.
 - There's a handy function for getting the URL of a path on the techo server. Just do `te.AbsURL("/my/path")`, and you'll get back something like `http://127.0.0.1:52713/my/path`.
 - Stop the server using `te.Stop()`. A common idiom is `defer te.Stop()` immediately after the call to `techo.New()`. FYI, the stoppability is due a (hidden) [Graceful](https://github.com/tylerb/graceful) server.
 
