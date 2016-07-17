@@ -40,7 +40,7 @@ func TestHello(t *testing.T) {
 ```
 
 
-Referencing the example above, here's a few things that are going on:
+Referencing the example above, here's a few things that are going on.
 
 - The `te` object (of type `techo.Techo`) returned by`techo.New()` has an embedded `Echo` server.
     - So you can treat `techo.Techo` just like `echo.Echo`, and do things like `te.POST( ... )` etc.
@@ -48,7 +48,7 @@ Referencing the example above, here's a few things that are going on:
     - on its own goroutine (transparently to the caller)
     - on a random available port
 - The port number is here: `te.Port`.
-- The base URL of the server (e.g. `http://127.0.0.1:53012`) is here: `te.Base`
+- The base URL of the server (e.g. `http://127.0.0.1:53012`) is here: `te.URL`
 - There's a handy function for getting the URL of a path on the techo server. Just do `te.AbsURL("/my/path")`, and you'll get back something like `http://127.0.0.1:52713/my/path`.
 - Stop the server using `te.Stop()`. A common idiom is `defer te.Stop()` immediately after the call to `techo.New()`. FYI, the stoppability is due a (hidden) [Graceful](https://github.com/tylerb/graceful) server.
 
