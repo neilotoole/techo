@@ -1,6 +1,6 @@
 /*
-Package techo is equivalent to http.httptest, but uses labstack/echo for the
-handlers for greater ease of use.
+Package techo is equivalent to http.httptest, but uses labstack/echo for greater
+ease of use, and provides several additional useful things.
 
 Example:
 
