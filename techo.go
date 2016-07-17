@@ -199,7 +199,6 @@ func (t *Techo) writeTLSFiles() error {
 // Errors are logged but not returned.
 func (t *Techo) cleanupTLSFiles() {
 
-	return
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
