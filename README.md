@@ -3,8 +3,8 @@
 ### Echo-based alternative to `http.httptest`
 
 `techo` is a package for transparently mocking HTTP/REST servers, inline in your
-test code, just like `http.httptest`. The key difference is that `techo` is based
-on [Echo](https://github.com/labstack/echo), which provides an easier interface.
+test code, just like [http.httptest](https://godoc.org/net/http/httptest). The key difference is that `techo` is based
+on [Echo](https://github.com/labstack/echo), which makes writing tests cleaner and more expressive.
 
 Also:
 - test multiple endpoints using the same `techo` instance
