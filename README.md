@@ -56,7 +56,7 @@ Referencing the example above, here's a few things that are going on.
 
 Start a server at a specific address:
 
-```
+```go
 	te, err := techo.NewAt(fmt.Sprintf("localhost:%v", port))
 	if err != nil {
 		return fmt.Errorf("Probably that port is in use: %v", err)
@@ -68,7 +68,7 @@ Start a server at a specific address:
 
 To add multiple endpoints:
 
-```
+```go
 	te.GET("/callme", func(c echo.Context) error {
 		return c.String(http.StatusOK, "maybe")
 	})
@@ -81,7 +81,7 @@ To add multiple endpoints:
 
 Start a TLS (HTTPS) server:
 
-```
+```go
 	te := techo.NewTLS()
 	defer te.Stop()
 	te.GET("/hello", func(c echo.Context) error {
@@ -93,13 +93,14 @@ If your client uses  `http.DefaultClient` as its underlying client, and you are
 using TLS, you will likely want to skip verification of the cert before any
 requests to the `techo` endpoint, like so:
 
-```
+```go
 	techo.SkipDefaultClientInsecureTLSVerify()
 	resp, err = http.Get(te.AbsURL("/hello"))
 ```
 
 To use your own cert:
-```
+
+```go
 	cert, _ := ioutil.ReadFile("path/to/server.crt")
 	key, _ := ioutil.ReadFile("path/to/server.key")
 	techo.SetDefaultTLSCert(cert, key)
