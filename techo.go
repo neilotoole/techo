@@ -45,6 +45,7 @@ import (
 	"github.com/tylerb/graceful"
 )
 
+// Techo is a techo server instance.
 type Techo struct {
 	// Port is the port number the server is listening at.
 	Port int
@@ -60,6 +61,18 @@ type Techo struct {
 	mutex        *sync.Mutex
 }
 
+// Config is the options available for staring a techo instance with techo.NewWith().
+type Config struct {
+	// Addr is the address to listen on, e.g. ":1234" or "localhost:8080".
+	Addr string
+	// TLS indicates to start a TLS/HTTPS server.
+	TLS bool
+	// TLSCert is the TLS certificate to use.
+	TLSCert []byte
+	// TLSKey is the TLS private key to use.
+	TLSKey []byte
+}
+
 // New starts a server at any available port. This value is available in the Port field.
 // In the unlikely event of an error, it is logged, and nil is returned.
 func New() *Techo {
@@ -70,9 +83,32 @@ func New() *Techo {
 	return te
 }
 
-// NewAt starts a server at addr (e.g. "127.0.0.1:8080").
-func NewAt(addr string) (*Techo, error) {
-	return listenAndStart(addr)
+// NewWith starts a server using the supplied config.
+func NewWith(cfg *Config) (*Techo, error) {
+	if cfg.TLS == false {
+		if cfg.Addr == "" {
+			return listenAndStart("localhost:")
+		}
+		return listenAndStart(cfg.Addr)
+	}
+
+	// cfg.TLS == true
+	cert := defaultCert
+	key := defaultKey
+
+	if len(cfg.TLSCert) > 0 {
+		cert = cfg.TLSCert
+	}
+
+	if len(cfg.TLSKey) > 0 {
+		cert = cfg.TLSKey
+	}
+
+	if cfg.Addr == "" {
+		return listenAndStartTLS("localhost:", cert, key)
+	}
+
+	return listenAndStartTLS(cfg.Addr, cert, key)
 }
 
 func listenAndStart(addr string) (*Techo, error) {
@@ -106,9 +142,11 @@ func listenAndStart(addr string) (*Techo, error) {
 	return t, nil
 }
 
+// NewTLS starts a TLS/HTTPS server on a random port. In the unusual event of an error,
+// the error is logged, and nil is returned.
 func NewTLS() *Techo {
 
-	te, err := listenAndStartTLS("localhost:")
+	te, err := listenAndStartTLS("localhost:", defaultCert, defaultKey)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -117,17 +155,17 @@ func NewTLS() *Techo {
 }
 
 // NewAt starts a server at addr (e.g. "127.0.0.1:8080").
-func NewTLSAt(addr string) (*Techo, error) {
-	return listenAndStartTLS(addr)
-}
+//func NewTLSAt(addr string) (*Techo, error) {
+//	return listenAndStartTLS(addr)
+//}
 
-func listenAndStartTLS(addr string) (*Techo, error) {
+func listenAndStartTLS(addr string, tlsCert []byte, tlsKey []byte) (*Techo, error) {
 
 	t := new(Techo)
 	t.Echo = echo.New()
 	t.mutex = &sync.Mutex{}
 
-	err := t.writeTLSFiles()
+	err := t.writeTLSFiles(tlsCert, tlsKey)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +202,7 @@ func listenAndStartTLS(addr string) (*Techo, error) {
 // writeTLSFiles writes out the cert and key files required when using TLS. It is
 // necessary to write these to disk (as opposed to providing the bytes directly)
 // as the echo API requires these files be loaded from disk.
-func (t *Techo) writeTLSFiles() error {
+func (t *Techo) writeTLSFiles(cert []byte, key []byte) error {
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -173,7 +211,7 @@ func (t *Techo) writeTLSFiles() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(certFile.Name(), []byte(defaultCert), os.ModePerm)
+	err = ioutil.WriteFile(certFile.Name(), cert, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -183,7 +221,7 @@ func (t *Techo) writeTLSFiles() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(keyFile.Name(), []byte(defaultKey), os.ModePerm)
+	err = ioutil.WriteFile(keyFile.Name(), key, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -307,9 +345,10 @@ func SetDefaultTLSCert(cert []byte, key []byte) {
 
 }
 
-// SkipDefaultClientInsecureTLSVerify sets InsecureSkipVerify to true on http.DefaultClient.
-// This means that you can use insecure cert with receiving an error (assuming your
-// client is using http.DefaultClient).
+// SkipDefaultClientInsecureTLSVerify is a convenience method that sets
+// InsecureSkipVerify to true on http.DefaultClient. This means that you can use
+// insecure certs without receiving an error (assuming your client is using
+// http.DefaultClient).
 func SkipDefaultClientInsecureTLSVerify() {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

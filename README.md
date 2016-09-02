@@ -29,7 +29,7 @@ func TestHello(t *testing.T) {
 		return c.String(http.StatusOK, fmt.Sprintf("Hello %v", param))
 	})
 
-    // Let's call the web server!
+	// Let's make a request to the web server
 	resp, _ := http.Get(te.AbsURL("/hello?name=World"))
 	// Note that te.AbsURL() turns "/hello" into "http://127.0.0.1:[PORT]/hello"
 	defer resp.Body.Close()
@@ -57,7 +57,8 @@ Referencing the example above, here's a few things that are going on.
 Start a server at a specific address:
 
 ```go
-	te, err := techo.NewAt(fmt.Sprintf("localhost:%v", port))
+	cfg := &techo.Config{Addr: "localhost:6666")}
+	te, err := techo.NewWith(cfg)
 	if err != nil {
 		return fmt.Errorf("Probably that port is in use: %v", err)
 	}
@@ -91,14 +92,14 @@ Start a TLS (HTTPS) server:
 
 If your client uses  `http.DefaultClient` as its underlying client, and you are
 using TLS, you will likely want to skip verification of the cert before any
-requests to the `techo` endpoint, like so:
+requests to the `techo` endpoint. `techo` provides a convenience method to do so.
 
 ```go
 	techo.SkipDefaultClientInsecureTLSVerify()
 	resp, err = http.Get(te.AbsURL("/hello"))
 ```
 
-To use your own cert:
+To set the default certs for new TLS servers:
 
 ```go
 	cert, _ := ioutil.ReadFile("path/to/server.crt")
@@ -107,7 +108,14 @@ To use your own cert:
 	te := techo.NewTLS()
 ```
 
+Or for one-time use of your own certs:
 
+```go
+	cert, _ := ioutil.ReadFile("path/to/server.crt")
+	key, _ := ioutil.ReadFile("path/to/server.key")
+	cfg := &techo.Config{TLS: true, TLSCert: cert, TLSKey: key}
+	te, err := techo.NewWith(cfg)
+```
 
 
 ### Acknowledgements

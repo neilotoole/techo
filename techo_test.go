@@ -48,7 +48,7 @@ func TestNewAt(t *testing.T) {
 	te.Stop()
 
 	// 4. Here's the function we want to test... start a server on that port
-	te2, err := NewAt(fmt.Sprintf("localhost:%v", port))
+	te2, err := NewWith(&Config{Addr: fmt.Sprintf("localhost:%v", port)})
 
 	require.Nil(t, err) // 5. w00t, it worked!
 	require.NotNil(t, te2)
@@ -72,7 +72,7 @@ func TestNewAt(t *testing.T) {
 	te2.Stop()
 	// Let's try with TLS
 
-	te3, err := NewTLSAt(fmt.Sprintf("localhost:%v", port))
+	te3, err := NewWith(&Config{Addr: fmt.Sprintf("localhost:%v", port), TLS: true})
 
 	require.Nil(t, err)
 	require.NotNil(t, te3)
