@@ -2,6 +2,8 @@
 Package techo is equivalent to http.httptest, but uses labstack/echo for greater
 ease of use, and provides several additional useful things.
 
+For more, visit: https://github.com/neilotoole/techo
+
 Example:
 
 	func TestHello(t *testing.T) {
@@ -73,8 +75,8 @@ type Config struct {
 	TLSKey []byte
 }
 
-// New starts a server at any available port. This value is available in the Port field.
-// In the unlikely event of an error, it is logged, and nil is returned.
+// New starts a server on any available port. This value is available in the Port field.
+// In the unlikely event of an error, the error is logged, and nil is returned.
 func New() *Techo {
 	te, err := listenAndStart("localhost:")
 	if err != nil {
@@ -153,11 +155,6 @@ func NewTLS() *Techo {
 	}
 	return te
 }
-
-// NewAt starts a server at addr (e.g. "127.0.0.1:8080").
-//func NewTLSAt(addr string) (*Techo, error) {
-//	return listenAndStartTLS(addr)
-//}
 
 func listenAndStartTLS(addr string, tlsCert []byte, tlsKey []byte) (*Techo, error) {
 
@@ -282,6 +279,43 @@ func (t *Techo) AbsURL(path string) string {
 	return t.URL + "/" + path
 }
 
+var defaultCert []byte
+var defaultKey []byte
+
+func init() {
+	defaultCert = localhostCert
+	defaultKey = localhostKey
+}
+
+// SetDefaultTLSCert is used to specify the TLS cert/key used by NewTLS().
+// Set the params to nil to restore to the internal default (localhost) cert.
+func SetDefaultTLSCert(cert []byte, key []byte) {
+
+	if cert == nil {
+		defaultCert = localhostCert
+	} else {
+		defaultCert = cert
+	}
+	if key == nil {
+		defaultKey = localhostKey
+	} else {
+		defaultKey = key
+	}
+
+}
+
+// SkipDefaultClientInsecureTLSVerify is a convenience method that sets
+// InsecureSkipVerify to true on http.DefaultClient. This means that you can use
+// insecure certs without receiving an error (assuming your client is using
+// http.DefaultClient).
+func SkipDefaultClientInsecureTLSVerify() {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	http.DefaultClient.Transport = tr
+}
+
 // NOTE: copied from http.httptest.internal
 
 // localhostCert is a PEM-encoded TLS cert with SAN IPs
@@ -319,40 +353,3 @@ y2ptGsuSmgUtWj3NM9xuwYPm+Z/F84K6+ARYiZ6PYj013sovGKUFfYAqVXVlxtIX
 qyUBnu3X9ps8ZfjLZO7BAkEAlT4R5Yl6cGhaJQYZHOde3JEMhNRcVFMO8dJDaFeo
 f9Oeos0UUothgiDktdQHxdNEwLjQf7lJJBzV+5OtwswCWA==
 -----END RSA PRIVATE KEY-----`)
-
-var defaultCert []byte
-var defaultKey []byte
-
-func init() {
-	defaultCert = localhostCert
-	defaultKey = localhostKey
-}
-
-// SetDefaultTLSCert is used to specify the TLS cert/key used by NewTLS().
-// Set the params to nil to restore to the internal default (localhost) cert.
-func SetDefaultTLSCert(cert []byte, key []byte) {
-
-	if cert == nil {
-		defaultCert = localhostCert
-	} else {
-		defaultCert = cert
-	}
-	if key == nil {
-		defaultKey = localhostKey
-	} else {
-		defaultKey = key
-	}
-
-}
-
-// SkipDefaultClientInsecureTLSVerify is a convenience method that sets
-// InsecureSkipVerify to true on http.DefaultClient. This means that you can use
-// insecure certs without receiving an error (assuming your client is using
-// http.DefaultClient).
-func SkipDefaultClientInsecureTLSVerify() {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
-	http.DefaultClient.Transport = tr
-}

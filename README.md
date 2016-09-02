@@ -90,15 +90,6 @@ Start a TLS (HTTPS) server:
 	})
 ```
 
-If your client uses  `http.DefaultClient` as its underlying client, and you are
-using TLS, you will likely want to skip verification of the cert before any
-requests to the `techo` endpoint. `techo` provides a convenience method to do so.
-
-```go
-	techo.SkipDefaultClientInsecureTLSVerify()
-	resp, err = http.Get(te.AbsURL("/hello"))
-```
-
 To set the default certs for new TLS servers:
 
 ```go
@@ -117,6 +108,16 @@ Or for one-time use of your own certs:
 	te, err := techo.NewWith(cfg)
 ```
 
+
+**Tip:** if your client uses  `http.DefaultClient` as its underlying client, and you are
+using TLS, you will likely want to skip verification of the cert before any
+requests to the `techo` endpoint. `techo` provides a convenience method to do so.
+
+```go
+	techo.SkipDefaultClientInsecureTLSVerify()
+	// then just use your http client as per usual, no more "invalid cert" errors
+	resp, err = http.Get(te.AbsURL("/hello"))
+```
 
 ### Acknowledgements
 
