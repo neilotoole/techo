@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, "hello world", string(body))
 }
 
-func TestNewAt(t *testing.T) {
+func TestNewWith(t *testing.T) {
 
 	// So, we want to test that we can start a server (using NewAt) at a specific address,
 	// e.g. localhost:1234. But how do we know what port will be free for our unit test?
