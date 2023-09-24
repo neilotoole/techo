@@ -7,9 +7,9 @@ test code, just like [http.httptest](https://godoc.org/net/http/httptest). The k
 on [Echo](https://github.com/labstack/echo), which makes writing tests cleaner and more expressive.
 
 > **Note**
-> The `techo` package was created way back in the early days of `echo`. Since then there have been multiple
-> major version releases of echo (`v4` at the time of writing). This package hasn't been updated in that time,
-> so it may not work with recent `echo` releases. I may update it if I find myself working directly with `echo` again,
+> The `techo` package was created way back in the early days of Echo. Since then there have been multiple
+> major version releases of Echo (`v4` at the time of writing). This package hasn't been updated in that time,
+> so it may not work with recent Echo releases. I may update it if I find myself working directly with Echo again,
 > but in the meantime, please consider this package effectively archived.
 
 
